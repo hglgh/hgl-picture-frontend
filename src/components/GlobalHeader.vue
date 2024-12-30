@@ -18,7 +18,7 @@
         />
       </a-col>
       <!--用户信息展示栏-->
-      <a-col flex="120px">
+      <a-col flex="150px">
         <div class="user-login-status">
           <div v-if="loginUserStroe.loginUser.id">
             <a-dropdown>
@@ -48,9 +48,7 @@
 import { computed, h, ref } from 'vue'
 import {
   HomeOutlined,
-  AppstoreOutlined,
   LoginOutlined,
-  SettingOutlined,
 } from '@ant-design/icons-vue'
 import { MenuProps, message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
@@ -72,6 +70,16 @@ const originItems = [
     key: '/admin/userManage',
     label: '用户管理',
     title: '用户管理',
+  },
+  {
+    key: '/add_picture',
+    label: '创建图片',
+    title: '创建图片',
+  },
+  {
+    key: '/admin/pictureManage',
+    label: '图片管理',
+    title: '图片管理',
   },
   {
     key: 'others',
@@ -121,7 +129,7 @@ const doLoginout = async () => {
     } else {
       message.error('退出登录失败' + response.data.message)
     }
-  } catch (e) {
+  } catch (e: any) {
     message.error('退出登录失败' + e.message)
   }
 }

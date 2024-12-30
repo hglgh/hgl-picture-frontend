@@ -1,0 +1,163 @@
+<template>
+  <div id="addPicturePage">
+    <h2 style="margin-bottom: 16px">
+      {{ route.query?.id ? '修改图片' : '创建图片' }}
+    </h2>
+    <!--    图片上传组件-->
+    <PictureUpload :picture="picture" :on-success="onSuccess" />
+    <!--    图片信息表单-->
+    <a-form
+      v-if="picture"
+      layout="vertical"
+      :model="pictureForm"
+      name="pictureForm"
+      @finish="handleSubmit"
+    >
+      <a-form-item label="名称" name="name">
+        <a-input
+          v-model:value="pictureForm.name"
+          placeholder="请输入图片名称"
+          allow-clear
+        />
+      </a-form-item>
+
+      <a-form-item label="简介" name="introduction">
+        <a-textarea
+          v-model:value="pictureForm.introduction"
+          placeholder="输入简介"
+          :auto-size="{ minRows: 1, maxRows: 5 }"
+          allow-clear
+        />
+      </a-form-item>
+      <a-form-item label="分类" name="category">
+        <a-auto-complete
+          v-model:value="pictureForm.category"
+          :options="categoryOptions"
+          placeholder="请输入图片分类"
+          allow-clear
+        />
+      </a-form-item>
+      <a-form-item label="标签" name="tags">
+        <a-select
+          v-model:value="pictureForm.tags"
+          mode="tags"
+          :options="tagOptions"
+          placeholder="请输入图片标签"
+          allow-clear
+        />
+      </a-form-item>
+      <a-form-item>
+        <a-button type="primary" html-type="submit" style="width: 100%">创建</a-button>
+      </a-form-item>
+    </a-form>
+  </div>
+</template>
+
+<script setup lang="ts">
+import PictureUpload from '@/components/PictureUpload.vue'
+import { onMounted, reactive, ref } from 'vue'
+import {
+  editPictureUsingPost,
+  getPictureVoByIdUsingGet,
+  listPictureTagCategoryUsingGet,
+} from '@/api/pictureController'
+import { message } from 'ant-design-vue'
+import { useRoute, useRouter } from 'vue-router'
+
+const picture = ref<API.PictureVO>()
+const onSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+  pictureForm.value = {
+    id: newPicture.id,
+    name: newPicture.name,
+    introduction: newPicture.introduction,
+    category: newPicture.category,
+    tags: newPicture.tags,
+  }
+}
+const pictureForm = ref<API.PictureEditRequest>({})
+const router = useRouter()
+/**
+ * 提交表单
+ * @param values
+ */
+const handleSubmit = async (values: any) => {
+  console.log("fewsf :"+values)
+  const pictureId = picture.value.id
+  if (!pictureId) {
+    return
+  }
+  const response = await editPictureUsingPost({
+    id: pictureId,
+    ...values,
+  })
+  if (response.data.code === 0 && response.data.data) {
+    message.success('创建成功')
+    router.push({
+      path: `/picture/${pictureId}`,
+      replace: true,
+    })
+  } else {
+    message.error('创建失败,' + response.data.message)
+  }
+}
+const categoryOptions = ref<string[]>([])
+const tagOptions = ref<string[]>([])
+/**
+ * 获取标签和分类选项
+ */
+const getTagCategoryOpations = async () => {
+  const response = await listPictureTagCategoryUsingGet()
+  if (response.data.code === 0 && response.data.data) {
+    tagOptions.value = (response.data.data.tagList ?? []).map((tag: string) => {
+      return {
+        value: tag,
+        label: tag,
+      }
+    })
+    categoryOptions.value = (response.data.data.categoryList ?? []).map((category: string) => {
+      return {
+        value: category,
+        label: category,
+      }
+    })
+  } else {
+    message.error('获取标签和分类选项失败,' + response.data.message)
+  }
+}
+onMounted(() => {
+  getTagCategoryOpations()
+})
+
+const route = useRoute()
+
+//获取老数据
+const getOldPicture = async () => {
+  //获取Id
+  const id = route.query?.id
+  if (id) {
+    const response = await getPictureVoByIdUsingGet({
+      id
+    })
+    if (response.data.code === 0 && response.data.data) {
+      const data = response.data.data
+      picture.value = data
+      pictureForm.value = {
+        name: data.name,
+        introduction: data.introduction,
+        category: data.category,
+        tags: data.tags,
+      }
+    }
+  }
+}
+onMounted(() => {
+  getOldPicture()
+})
+</script>
+<style scoped>
+#addPicturePage {
+  max-width: 720px;
+  margin: 0 auto;
+}
+</style>
