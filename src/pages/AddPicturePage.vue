@@ -3,9 +3,18 @@
     <h2 style="margin-bottom: 16px">
       {{ route.query?.id ? '修改图片' : '创建图片' }}
     </h2>
-    <!--    图片上传组件-->
-    <PictureUpload :picture="picture" :on-success="onSuccess" />
-    <!--    图片信息表单-->
+    <!--    选择上传方式-->
+    <a-tabs v-model:activeKey="uploadType">
+      <a-tab-pane key="file" tab="文件上传">
+        <!--    图片上传组件-->
+        <PictureUpload :picture="picture" :on-success="onSuccess" />
+      </a-tab-pane>
+      <a-tab-pane key="url" tab="URL上传" force-render>
+        <!--    URL图片上传组件-->
+        <UrlPictureUpload picture="picture" :on-success="onSuccess" />
+        <!--    图片信息表单-->
+      </a-tab-pane>
+    </a-tabs>
     <a-form
       v-if="picture"
       layout="vertical"
@@ -14,11 +23,7 @@
       @finish="handleSubmit"
     >
       <a-form-item label="名称" name="name">
-        <a-input
-          v-model:value="pictureForm.name"
-          placeholder="请输入图片名称"
-          allow-clear
-        />
+        <a-input v-model:value="pictureForm.name" placeholder="请输入图片名称" allow-clear />
       </a-form-item>
 
       <a-form-item label="简介" name="introduction">
@@ -63,6 +68,7 @@ import {
 } from '@/api/pictureController'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
+import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
 
 const picture = ref<API.PictureVO>()
 const onSuccess = (newPicture: API.PictureVO) => {
@@ -77,12 +83,13 @@ const onSuccess = (newPicture: API.PictureVO) => {
 }
 const pictureForm = ref<API.PictureEditRequest>({})
 const router = useRouter()
+const uploadType = ref<'file' | 'url'>('file')
 /**
  * 提交表单
  * @param values
  */
 const handleSubmit = async (values: any) => {
-  console.log("fewsf :"+values)
+  console.log('fewsf :' + values)
   const pictureId = picture.value.id
   if (!pictureId) {
     return
@@ -137,7 +144,7 @@ const getOldPicture = async () => {
   const id = route.query?.id
   if (id) {
     const response = await getPictureVoByIdUsingGet({
-      id
+      id,
     })
     if (response.data.code === 0 && response.data.data) {
       const data = response.data.data
