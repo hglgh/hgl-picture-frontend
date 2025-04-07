@@ -30,40 +30,14 @@
     </div>
 
     <!--    图片列表-->
-    <a-list
-      :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
-      :data-source="dataList"
-      :pagination="pagination"
-      @change="doTableChange"
-      :loading="loading"
-    >
-      <template #renderItem="{ item: picture }">
-        <a-list-item style="padding: 0">
-          <!--          单张图片-->
-          <a-card hoverable @click="doClickPicture(picture)">
-            <template #cover>
-              <img
-                :alt="picture.name"
-                :src="picture.url"
-                style="height: 180px; object-fit: cover"
-              />
-            </template>
-            <a-card-meta :title="picture.name">
-              <template #description>
-                <a-flex>
-                  <a-tag color="green">
-                    {{ picture.category ?? '默认' }}
-                  </a-tag>
-                  <a-tag v-for="tag in picture.tags" :key="tag">
-                    {{ tag }}
-                  </a-tag>
-                </a-flex>
-              </template>
-            </a-card-meta>
-          </a-card>
-        </a-list-item>
-      </template>
-    </a-list>
+    <PictureList :loading="loading" :dataList="dataList"/>
+    <a-pagination
+      v-model:current="queryParams.current"
+      v-model:page-size="queryParams.pageSize"
+      :total="total"
+      style="text-align: right"
+      @change="onPageChange"
+    />
   </div>
 </template>
 
@@ -72,9 +46,10 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   listPictureTagCategoryUsingGet,
-  listPictureVoByPageUsingPost,
+  listPictureVoByPageUsingPost, listPictureVoByPageWithCacheUsingPost
 } from '@/api/pictureController'
 import { useRouter } from 'vue-router'
+import PictureList from '@/components/PictureList.vue'
 
 const router = useRouter()
 const loading = ref(true)
@@ -91,18 +66,11 @@ const queryParams = reactive<API.PictureQueryRequest>({
 })
 
 //分页参数
-const pagination = computed(() => {
-  return {
-    current: queryParams.current,
-    pageSize: queryParams.pageSize,
-    total: total.value,
-    onChange: (page: number, pageSize: number) => {
-      queryParams.current = page
-      queryParams.pageSize = pageSize
-      fetchData()
-    },
-  }
-})
+const onPageChange= (page: number, pageSize: number) => {
+  queryParams.current = page
+  queryParams.pageSize = pageSize
+  fetchData()
+}
 
 //获取数据
 const fetchData = async () => {
@@ -130,11 +98,6 @@ const fetchData = async () => {
   loading.value = false
 }
 
-const doTableChange = (page: any) => {
-  queryParams.current = page.current
-  queryParams.pageSize = page.pageSize
-  fetchData()
-}
 //页面加载时请求一次获取数据
 onMounted(() => {
   fetchData()
@@ -169,18 +132,6 @@ onMounted(() => {
   getTagCategoryOpations()
 })
 
-/**
- * 点击图片跳转到图片详情页
- * @param picture
- */
-const doClickPicture = (picture: API.PictureVO) => {
-  router.push({
-    path: `/picture/${picture.id}`,
-    // query: {
-    //   id: picture.id,
-    // },
-  })
-}
 </script>
 
 <style scoped>

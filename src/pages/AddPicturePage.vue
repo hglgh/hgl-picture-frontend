@@ -3,15 +3,18 @@
     <h2 style="margin-bottom: 16px">
       {{ route.query?.id ? '修改图片' : '创建图片' }}
     </h2>
+    <a-typography-paragraph v-if="spaceId" type="secondary">
+      保存到空间：<a :href="`/space/${spaceId}`" target="_blank">{{ spaceId }}</a>
+    </a-typography-paragraph>
     <!--    选择上传方式-->
     <a-tabs v-model:activeKey="uploadType">
       <a-tab-pane key="file" tab="文件上传">
         <!--    图片上传组件-->
-        <PictureUpload :picture="picture" :on-success="onSuccess" />
+        <PictureUpload :picture="picture" :spaceId="spaceId" :on-success="onSuccess" />
       </a-tab-pane>
       <a-tab-pane key="url" tab="URL上传" force-render>
         <!--    URL图片上传组件-->
-        <UrlPictureUpload picture="picture" :on-success="onSuccess" />
+        <UrlPictureUpload picture="picture" :spaceId="spaceId" :on-success="onSuccess" />
         <!--    图片信息表单-->
       </a-tab-pane>
     </a-tabs>
@@ -60,7 +63,7 @@
 
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import {
   editPictureUsingPost,
   getPictureVoByIdUsingGet,
@@ -69,6 +72,8 @@ import {
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
+const route = useRoute()
+const spaceId = computed(()=>route.query?.spaceId)
 
 const picture = ref<API.PictureVO>()
 const onSuccess = (newPicture: API.PictureVO) => {
@@ -89,13 +94,13 @@ const uploadType = ref<'file' | 'url'>('file')
  * @param values
  */
 const handleSubmit = async (values: any) => {
-  console.log('fewsf :' + values)
-  const pictureId = picture.value.id
+  const pictureId = picture.value?.id
   if (!pictureId) {
     return
   }
   const response = await editPictureUsingPost({
     id: pictureId,
+    spaceId:spaceId.value,
     ...values,
   })
   if (response.data.code === 0 && response.data.data) {
@@ -136,7 +141,7 @@ onMounted(() => {
   getTagCategoryOpations()
 })
 
-const route = useRoute()
+
 
 //获取老数据
 const getOldPicture = async () => {

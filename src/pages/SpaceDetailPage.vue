@@ -1,0 +1,110 @@
+<template>
+  <div id="spaceDetailPage">
+    <a-flex justify="space-between">
+      <h2>{{space.spaceName}}(私有空间)</h2>
+      <a-space size="middle">
+        <a-button type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank">+ 创建图片</a-button>
+        <a-tooltip :title="`占用空间${formatSize(space.totalSize)}/${formatSize(space.maxSize)}`">
+          <a-progress type="circle" :percent="((space.totalSize * 100 )/ space.maxSize).toFixed(1)" :size="42" />
+        </a-tooltip>
+      </a-space>
+    </a-flex>
+    <div style="margin-bottom: 16px"/>
+    <!--    图片列表-->
+    <PictureList :loading="loading" :dataList="dataList" :show-opation="true" :on-reload="fetchData"/>
+    <a-pagination
+      v-model:current="queryParams.current"
+      v-model:page-size="queryParams.pageSize"
+      :total="total"
+      style="text-align: right"
+      @change="onPageChange"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, ref,reactive } from 'vue'
+import { message } from 'ant-design-vue'
+import { getSpaceVoByIdUsingGet } from '@/api/spaceController'
+import {  useRouter } from 'vue-router'
+import { listPictureVoByPageUsingPost, listPictureVoByPageWithCacheUsingPost } from '@/api/pictureController'
+import { formatSize } from '@/utils'
+import PictureList from '@/components/PictureList.vue'
+
+
+interface Props {
+  id: string | number
+}
+
+const props = defineProps<Props>()
+const router = useRouter()
+
+const space = ref<API.SpaceVO>({})
+
+//--------------------获取空间详情--------------------------
+const fetchSpaceDetail = async () => {
+  try {
+    const response = await getSpaceVoByIdUsingGet({
+      id: props.id,
+    })
+    if (response.data.code === 0 && response.data.data) {
+      space.value = response.data.data
+    } else {
+      message.error('获取空间详情失败，' + response.data.message)
+    }
+  } catch (e: any) {
+    message.error('获取空间详情失败，' + e.message)
+  }
+}
+onMounted(() => {
+  fetchSpaceDetail()
+})
+
+//--------------------获取图片列表--------------------------
+const loading = ref(true)
+//定义数据
+const dataList = ref<API.PictureVO[]>([])
+const total = ref<number>(0)
+//搜索条件
+const queryParams = reactive<API.PictureQueryRequest>({
+  current: 1,
+  pageSize: 12,
+  sortField: 'createTime',
+  sortOrder: 'descend',
+})
+//分页参数
+const onPageChange= (page: number, pageSize: number) => {
+  queryParams.current = page
+  queryParams.pageSize = pageSize
+  fetchData()
+}
+
+//获取数据
+const fetchData = async () => {
+  loading.value = true
+  //转换搜索参数
+  const params = {
+    spaceId: props.id,
+    ...queryParams,
+  }
+  const res = await listPictureVoByPageUsingPost(params)
+  if (res.data.code === 0 && res.data.data) {
+    dataList.value = res.data.data.records ?? []
+    total.value = res.data.data.total ?? 0
+  } else {
+    message.error('获取数据失败')
+  }
+  loading.value = false
+}
+
+//页面加载时请求一次获取数据
+onMounted(() => {
+  fetchData()
+})
+</script>
+
+<style scoped>
+#spaceDetailPage {
+  margin-bottom: 16px;
+}
+</style>
