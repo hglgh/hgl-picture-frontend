@@ -10,11 +10,11 @@
     <a-tabs v-model:activeKey="uploadType">
       <a-tab-pane key="file" tab="文件上传">
         <!--    图片上传组件-->
-        <PictureUpload :picture="picture" :spaceId="spaceId" :on-success="onSuccess" />
+        <PictureUpload :picture="picture" :space-id="spaceId" :on-success="onSuccess" />
       </a-tab-pane>
       <a-tab-pane key="url" tab="URL上传" force-render>
         <!--    URL图片上传组件-->
-        <UrlPictureUpload picture="picture" :spaceId="spaceId" :on-success="onSuccess" />
+        <UrlPictureUpload :picture="picture" :space-id="spaceId" :on-success="onSuccess" />
         <!--    图片信息表单-->
       </a-tab-pane>
     </a-tabs>
