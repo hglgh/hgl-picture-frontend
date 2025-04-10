@@ -46,6 +46,19 @@
             <a-descriptions-item label="大小">
               {{ formatSize(picture.picSize) }}
             </a-descriptions-item>
+            <a-descriptions-item label="主色调">
+              <a-space>
+                {{ picture.picColor ?? '-' }}
+                <div
+                  v-if="picture.picColor"
+                  :style="{
+                    backgroundColor: toHexColor(picture.picColor),
+                    width: '16px',
+                    height: '16px',
+                  }"
+                />
+              </a-space>
+            </a-descriptions-item>
           </a-descriptions>
           <!--          图片操作-->
           <a-space wrap>
@@ -55,17 +68,20 @@
                 <DownloadOutlined />
               </template>
             </a-button>
-
+            <a-button :icon="h(ShareAltOutlined)" type="primary" @click="doShare" ghost
+              >分享
+            </a-button>
             <a-button v-if="canEdit" :icon="h(EditOutlined)" type="default" @click="doEdit"
-              >编辑</a-button
-            >
+              >编辑
+            </a-button>
             <a-button v-if="canEdit" :icon="h(DeleteOutlined)" danger @click="doDelete"
-              >删除</a-button
-            >
+              >删除
+            </a-button>
           </a-space>
         </a-card>
       </a-col>
     </a-row>
+    <ShareModal ref="shareModalRef" :link="shareLink"/>
   </div>
 </template>
 
@@ -74,9 +90,10 @@ import { onMounted, ref, h, computed } from 'vue'
 import { message } from 'ant-design-vue'
 import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController'
 import { useRoute, useRouter } from 'vue-router'
-import { downloadImage, formatSize } from '@/utils'
-import { DeleteOutlined, EditOutlined, DownloadOutlined } from '@ant-design/icons-vue'
+import { downloadImage, formatSize, toHexColor } from '@/utils'
+import { DeleteOutlined, EditOutlined, DownloadOutlined,ShareAltOutlined } from '@ant-design/icons-vue'
 import { useLoginUserStroe } from '@/stores/useLoginUserStroe'
+import ShareModal from '@/components/ShareModal.vue'
 
 const route = useRoute()
 
@@ -138,14 +155,24 @@ const doEdit = () => {
     path: `/add_picture`,
     query: {
       id: picture.value.id,
-      spaceId: picture.value.spaceId
-    }
+      spaceId: picture.value.spaceId,
+    },
   })
 }
 
 //下载图片
 const doDownload = () => {
   downloadImage(picture.value.url)
+}
+// 分享
+const shareModalRef = ref()
+// 分享链接
+const shareLink = ref<string>()
+const doShare = () => {
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${props.id}`
+  if (shareModalRef.value){
+    shareModalRef.value.openModal()
+  }
 }
 </script>
 

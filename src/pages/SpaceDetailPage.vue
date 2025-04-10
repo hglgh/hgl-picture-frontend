@@ -1,17 +1,37 @@
 <template>
   <div id="spaceDetailPage">
     <a-flex justify="space-between">
-      <h2>{{space.spaceName}}(私有空间)</h2>
+      <h2>{{ space.spaceName }}(私有空间)</h2>
       <a-space size="middle">
-        <a-button type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank">+ 创建图片</a-button>
+        <a-button type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank"
+          >+ 创建图片</a-button
+        >
+        <a-button :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
+
         <a-tooltip :title="`占用空间${formatSize(space.totalSize)}/${formatSize(space.maxSize)}`">
-          <a-progress type="circle" :percent="((space.totalSize * 100 )/ space.maxSize).toFixed(1)" :size="42" />
+          <a-progress
+            type="circle"
+            :percent="((space.totalSize * 100) / space.maxSize).toFixed(1)"
+            :size="42"
+          />
         </a-tooltip>
       </a-space>
     </a-flex>
-    <div style="margin-bottom: 16px"/>
+    <div style="margin-bottom: 16px" />
+    <PictureSearchForm :on-search="doSearch" />
+    <BatchEditPictureModal ref="batchEditPictureModalRef" :picture-list="dataList" :space-id="id" :on-success="onBatchEditPictureSuccess"/>
+    <!-- 按颜色搜索 -->
+    <a-form-item label="按颜色搜索" style="margin-top: 16px">
+      <color-picker format="hex" @pureColorChange="onColorChange" />
+    </a-form-item>
+    <div style="margin-bottom: 16px" />
     <!--    图片列表-->
-    <PictureList :loading="loading" :dataList="dataList" :show-opation="true" :on-reload="fetchData"/>
+    <PictureList
+      :loading="loading"
+      :dataList="dataList"
+      :show-opation="true"
+      :on-reload="fetchData"
+    />
     <a-pagination
       v-model:current="queryParams.current"
       v-model:page-size="queryParams.pageSize"
@@ -23,14 +43,20 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref,reactive } from 'vue'
+import { onMounted, ref, reactive, h } from 'vue'
 import { message } from 'ant-design-vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController'
-import {  useRouter } from 'vue-router'
-import { listPictureVoByPageUsingPost, listPictureVoByPageWithCacheUsingPost } from '@/api/pictureController'
+import { useRouter } from 'vue-router'
+import {
+  listPictureVoByPageUsingPost, searchPictureByColorUsingPost
+} from '@/api/pictureController'
 import { formatSize } from '@/utils'
 import PictureList from '@/components/PictureList.vue'
-
+import PictureSearchForm from '@/components/PictureSearchForm.vue'
+import "vue3-colorpicker/style.css";
+import { ColorPicker } from 'vue3-colorpicker'
+import BatchEditPictureModal from '@/components/BatchEditPictureModal.vue'
+import { EditOutlined } from '@ant-design/icons-vue'
 
 interface Props {
   id: string | number
@@ -66,16 +92,16 @@ const loading = ref(true)
 const dataList = ref<API.PictureVO[]>([])
 const total = ref<number>(0)
 //搜索条件
-const queryParams = reactive<API.PictureQueryRequest>({
+const queryParams = ref<API.PictureQueryRequest>({
   current: 1,
-  pageSize: 12,
+  pageSize: 10,
   sortField: 'createTime',
   sortOrder: 'descend',
 })
 //分页参数
-const onPageChange= (page: number, pageSize: number) => {
-  queryParams.current = page
-  queryParams.pageSize = pageSize
+const onPageChange = (page: number, pageSize: number) => {
+  queryParams.value.current = page
+  queryParams.value.pageSize = pageSize
   fetchData()
 }
 
@@ -85,7 +111,7 @@ const fetchData = async () => {
   //转换搜索参数
   const params = {
     spaceId: props.id,
-    ...queryParams,
+    ...queryParams.value,
   }
   const res = await listPictureVoByPageUsingPost(params)
   if (res.data.code === 0 && res.data.data) {
@@ -101,6 +127,47 @@ const fetchData = async () => {
 onMounted(() => {
   fetchData()
 })
+const doSearch = (newQueryParams: API.PictureQueryRequest) => {
+  queryParams.value = {
+    ...queryParams.value,
+    ...newQueryParams,
+    current: 1,
+  }
+  fetchData()
+}
+// 按颜色搜索
+const onColorChange = async (color: string) => {
+  loading.value = true
+  const respone = await searchPictureByColorUsingPost({
+    picColor: color,
+    spaceId: props.id
+  })
+  if (respone.data.code === 0 && respone.data.data) {
+    const data = respone.data.data ?? []
+    dataList.value = data
+    total.value = data.length
+  } else {
+    message.error('获取数据失败,'+ respone.data.message)
+  }
+  loading.value = false
+}
+
+// 分享弹窗引用
+const batchEditPictureModalRef = ref()
+
+// 批量编辑成功后，刷新数据
+const onBatchEditPictureSuccess = () => {
+  fetchData()
+}
+
+// 打开批量编辑弹窗
+const doBatchEdit = () => {
+  if (batchEditPictureModalRef.value) {
+    batchEditPictureModalRef.value.openModal()
+  }
+}
+
+
 </script>
 
 <style scoped>

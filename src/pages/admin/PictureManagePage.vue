@@ -26,7 +26,7 @@
       <a-form-item label="类型">
         <a-input v-model:value="queryParams.category" placeholder="请输入类型" allow-clear />
       </a-form-item>
-      <a-form-item label="类型">
+      <a-form-item label="标签">
         <a-select
           v-model:value="queryParams.tags"
           mode="tags"
