@@ -25,6 +25,28 @@
       name="pictureForm"
       @finish="handleSubmit"
     >
+      <div v-if="picture" class="edit-bar">
+        <a-space size="middle">
+          <a-button :icon="h(EditOutlined)" @click="doEditPicture">编辑图片</a-button>
+          <a-button type="primary" ghost :icon="h(FullscreenOutlined)" @click="doImagePainting"
+            >AI扩图</a-button
+          >
+        </a-space>
+        <ImageCropper
+          ref="imageCropperRef"
+          :imageUrl="picture?.url"
+          :picture="picture"
+          :spaceId="spaceId"
+          :onSuccess="onCropSuccess"
+        />
+        <ImageOutPainting
+          ref="imageOutPaintingRef"
+          :picture="picture"
+          :spaceId="spaceId"
+          :onSuccess="onImageOutPaintingSuccess"
+        />
+      </div>
+
       <a-form-item label="名称" name="name">
         <a-input v-model:value="pictureForm.name" placeholder="请输入图片名称" allow-clear />
       </a-form-item>
@@ -63,7 +85,7 @@
 
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, h, onMounted, reactive, ref } from 'vue'
 import {
   editPictureUsingPost,
   getPictureVoByIdUsingGet,
@@ -72,9 +94,13 @@ import {
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
-const route = useRoute()
-const spaceId = computed(()=>route.query?.spaceId)
+import { EditOutlined, FullscreenOutlined } from '@ant-design/icons-vue'
+import ImageCropper from '@/components/ImageCropper.vue'
+import ImageOutPainting from '@/components/ImageOutPainting.vue'
 
+const route = useRoute()
+const spaceId = computed(() => route.query?.spaceId)
+const imageCropperRef = ref()
 const picture = ref<API.PictureVO>()
 const onSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
@@ -100,7 +126,7 @@ const handleSubmit = async (values: any) => {
   }
   const response = await editPictureUsingPost({
     id: pictureId,
-    spaceId:spaceId.value,
+    spaceId: spaceId.value,
     ...values,
   })
   if (response.data.code === 0 && response.data.data) {
@@ -141,8 +167,6 @@ onMounted(() => {
   getTagCategoryOpations()
 })
 
-
-
 //获取老数据
 const getOldPicture = async () => {
   //获取Id
@@ -166,10 +190,37 @@ const getOldPicture = async () => {
 onMounted(() => {
   getOldPicture()
 })
+
+// 编辑图片
+const doEditPicture = () => {
+  if (imageCropperRef.value) {
+    imageCropperRef.value.openModal()
+  }
+}
+// 编辑成功事件
+const onCropSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
+
+const imageOutPaintingRef = ref()
+const doImagePainting = () => {
+  if (imageOutPaintingRef.value) {
+    imageOutPaintingRef.value.openModal()
+  }
+}
+// AI扩图成功事件
+const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
 </script>
 <style scoped>
 #addPicturePage {
   max-width: 720px;
   margin: 0 auto;
+}
+
+#addPicturePage .edit-bar {
+  text-align: center;
+  margin: 16px 0;
 }
 </style>

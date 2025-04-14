@@ -30,7 +30,7 @@
     </div>
 
     <!--    图片列表-->
-    <PictureList :loading="loading" :dataList="dataList" :show-opation="true"/>
+    <PictureList :loading="loading" :dataList="dataList" :show-opation="false"/>
     <a-pagination
       v-model:current="queryParams.current"
       v-model:page-size="queryParams.pageSize"
