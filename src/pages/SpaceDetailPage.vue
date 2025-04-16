@@ -4,8 +4,17 @@
       <h2>{{ space.spaceName }}(私有空间)</h2>
       <a-space size="middle">
         <a-button type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank"
-          >+ 创建图片</a-button
+          >+ 创建图片
+        </a-button>
+        <a-button
+          :icon="h(BarChartOutlined)"
+          type="primary"
+          ghost
+          :href="`/space_analyze?spaceId=${id}`"
+          target="_blank"
         >
+          空间分析
+        </a-button>
         <a-button :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
 
         <a-tooltip :title="`占用空间${formatSize(space.totalSize)}/${formatSize(space.maxSize)}`">
@@ -19,7 +28,12 @@
     </a-flex>
     <div style="margin-bottom: 16px" />
     <PictureSearchForm :on-search="doSearch" />
-    <BatchEditPictureModal ref="batchEditPictureModalRef" :picture-list="dataList" :space-id="id" :on-success="onBatchEditPictureSuccess"/>
+    <BatchEditPictureModal
+      ref="batchEditPictureModalRef"
+      :picture-list="dataList"
+      :space-id="id"
+      :on-success="onBatchEditPictureSuccess"
+    />
     <!-- 按颜色搜索 -->
     <a-form-item label="按颜色搜索" style="margin-top: 16px">
       <color-picker format="hex" @pureColorChange="onColorChange" />
@@ -48,15 +62,16 @@ import { message } from 'ant-design-vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController'
 import { useRouter } from 'vue-router'
 import {
-  listPictureVoByPageUsingPost, searchPictureByColorUsingPost
+  listPictureVoByPageUsingPost,
+  searchPictureByColorUsingPost,
 } from '@/api/pictureController'
 import { formatSize } from '@/utils'
 import PictureList from '@/components/PictureList.vue'
 import PictureSearchForm from '@/components/PictureSearchForm.vue'
-import "vue3-colorpicker/style.css";
+import 'vue3-colorpicker/style.css'
 import { ColorPicker } from 'vue3-colorpicker'
 import BatchEditPictureModal from '@/components/BatchEditPictureModal.vue'
-import { EditOutlined } from '@ant-design/icons-vue'
+import { EditOutlined, BarChartOutlined } from '@ant-design/icons-vue'
 
 interface Props {
   id: string | number
@@ -140,14 +155,14 @@ const onColorChange = async (color: string) => {
   loading.value = true
   const respone = await searchPictureByColorUsingPost({
     picColor: color,
-    spaceId: props.id
+    spaceId: props.id,
   })
   if (respone.data.code === 0 && respone.data.data) {
     const data = respone.data.data ?? []
     dataList.value = data
     total.value = data.length
   } else {
-    message.error('获取数据失败,'+ respone.data.message)
+    message.error('获取数据失败,' + respone.data.message)
   }
   loading.value = false
 }
@@ -166,8 +181,6 @@ const doBatchEdit = () => {
     batchEditPictureModalRef.value.openModal()
   }
 }
-
-
 </script>
 
 <style scoped>
