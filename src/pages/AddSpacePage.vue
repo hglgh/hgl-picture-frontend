@@ -1,7 +1,7 @@
 <template>
   <div id="addSpacePage">
     <h2 style="margin-bottom: 16px">
-      {{ route.query?.id ? '修改空间' : '创建空间' }}
+      {{ route.query?.id ? '修改' : '创建' }} {{SPACE_TYPE_MAP[spaceType]}}
     </h2>
     <a-form layout="vertical" :model="spaceForm" name="spaceForm" @finish="handleSubmit">
       <a-form-item label="空间名称" name="spaceName">
@@ -18,8 +18,8 @@
       </a-form-item>
       <a-form-item>
         <a-button type="primary" html-type="submit" :loading="loading" style="width: 100%"
-          >提交</a-button
-        >
+          >提交
+        </a-button>
       </a-form-item>
     </a-form>
     <!--    空间级别介绍-->
@@ -38,16 +38,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import {
   addSpaceUsingPost,
   getSpaceVoByIdUsingGet,
-  listSpaceLevelUsingGet, updateSpaceUsingPost
+  listSpaceLevelUsingGet,
+  updateSpaceUsingPost,
 } from '@/api/spaceController'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
-import { SPACE_LEVEL_OPTIONS } from '@/constants/space'
-import { formatSize } from '../utils'
+import { SPACE_LEVEL_OPTIONS, SPACE_TYPE_ENUM, SPACE_TYPE_MAP } from '@/constants/space'
+import { formatSize } from '@/utils'
 
 const loading = ref(false)
 const space = ref<API.SpaceVO>()
@@ -55,10 +56,19 @@ const spaceLevelList = ref<API.SpaceLevel[]>([])
 const spaceForm = ref<API.SpaceAddRequest | API.SpaceEditRequest>({})
 const router = useRouter()
 
+const route = useRoute()
+//空间类型 默认为私有空间
+const spaceType = computed(() => {
+  if (route.query?.type) {
+    return Number(route.query?.type)
+  } else {
+    return SPACE_TYPE_ENUM.PRIVATE
+  }
+})
+
 const fetchSpaceLevelList = async () => {
   const response = await listSpaceLevelUsingGet()
   if (response.data.code === 0 && response.data.data) {
-    debugger
     spaceLevelList.value = response.data.data
   } else {
     message.error('获取空间级别失败,' + response.data.message)
@@ -85,12 +95,12 @@ const handleSubmit = async (values: any) => {
     //新增
     response = await addSpaceUsingPost({
       ...values,
+      spaceType: spaceType.value,
     })
   }
   if (response.data.code === 0 && response.data.data) {
     message.success('操作成功')
-    debugger
-    router.push({
+    await router.push({
       path: `/space/${spaceId}`,
       replace: true,
     })
@@ -99,8 +109,6 @@ const handleSubmit = async (values: any) => {
   }
   loading.value = false
 }
-
-const route = useRoute()
 
 //获取老数据
 const getOldSpace = async () => {
