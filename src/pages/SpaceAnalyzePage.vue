@@ -47,7 +47,7 @@ import SpaceUserAnalyze from '@/components/analyze/SpaceUserAnalyze.vue'
 import SpaceRankAnalyze from '@/components/analyze/SpaceRankAnalyze.vue'
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
-import { useLoginUserStroe } from '@/stores/useLoginUserStroe'
+import { useLoginUserStore } from '@/stores/useLoginUserStore'
 
 const route = useRoute()
 const spaceId = computed(() => route.query?.spaceId as string)
@@ -55,7 +55,7 @@ const queryAll = computed(() => !!route.query?.queryAll)
 const queryPublic = computed(() => !!route.query?.queryPublic)
 
 // 判断是否为管理员
-const loginUserStroe = useLoginUserStroe()
+const loginUserStroe = useLoginUserStore()
 const loginUser = loginUserStroe.loginUser
 const isAdmin = computed(() => {
   return loginUser.userRole === 'admin'

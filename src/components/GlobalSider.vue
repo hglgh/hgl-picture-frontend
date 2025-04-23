@@ -15,14 +15,14 @@
 import { computed, h, ref, watchEffect } from 'vue'
 import { PictureOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
-import { useLoginUserStroe } from '@/stores/useLoginUserStroe'
+import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import { SPACE_TYPE_ENUM } from '@/constants/space'
 import { getSpaceUserUsingPost, listMyTeamSpaceUsingPost } from '@/api/spaceUserController'
 import { message } from 'ant-design-vue'
 
 const current = ref<string[]>(['/'])
 
-const loginUserStroe = useLoginUserStroe()
+const loginUserStroe = useLoginUserStore()
 //固定的菜单列表
 const fixedMenuItems = [
   {

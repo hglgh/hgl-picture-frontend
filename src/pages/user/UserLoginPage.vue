@@ -28,7 +28,7 @@
 <script lang="ts" setup>
 import { reactive } from 'vue'
 import { userLoginUsingPost } from '@/api/yonghujiekou'
-import { useLoginUserStroe } from '@/stores/useLoginUserStroe'
+import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import { message } from 'ant-design-vue'
 import Router from '@/router'
 import router from '@/router'
@@ -41,7 +41,7 @@ const formState = reactive<API.UserLoginRequest>({
   userPassword: '',
 })
 
-const userLoginStore = useLoginUserStroe()
+const userLoginStore = useLoginUserStore()
 
 /**
  * 提交表单

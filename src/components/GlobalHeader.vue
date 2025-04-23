@@ -59,10 +59,10 @@ import {
 } from '@ant-design/icons-vue'
 import { MenuProps, message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
-import { useLoginUserStroe } from '@/stores/useLoginUserStroe'
+import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import { userLogoutUsingPost } from '@/api/yonghujiekou'
 
-const loginUserStroe = useLoginUserStroe()
+const loginUserStroe = useLoginUserStore()
 const current = ref<string[]>(['/'])
 
 //未经过滤的菜单项

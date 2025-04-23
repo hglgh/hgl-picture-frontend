@@ -69,7 +69,7 @@ const router = createRouter({
       component: SpaceManagePage,
     },
     {
-      path: '/admin/spaceUserManage/:id',
+      path: '/spaceUserManage/:id',
       name: '空间成员管理',
       component: SpaceUserManagePage,
       props: true,

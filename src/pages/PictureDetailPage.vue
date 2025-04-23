@@ -92,7 +92,7 @@ import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureC
 import { useRoute, useRouter } from 'vue-router'
 import { downloadImage, formatSize, toHexColor } from '@/utils'
 import { DeleteOutlined, EditOutlined, DownloadOutlined,ShareAltOutlined } from '@ant-design/icons-vue'
-import { useLoginUserStroe } from '@/stores/useLoginUserStroe'
+import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import ShareModal from '@/components/ShareModal.vue'
 import { SPACE_PERMISSION_ENUM } from '@/constants/space'
 

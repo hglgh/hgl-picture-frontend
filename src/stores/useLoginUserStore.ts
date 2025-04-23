@@ -5,7 +5,7 @@ import { getLoginUserUsingGet } from '@/api/yonghujiekou'
 /**
  * 存储登录用户信息的状态
  */
-export const useLoginUserStroe = defineStore('loginUser', () => {
+export const useLoginUserStore = defineStore('loginUser', () => {
   //定义状态的初始值
   const loginUser = ref<API.LoginUserVO>({
     userName: '未登录',

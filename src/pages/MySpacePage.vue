@@ -6,14 +6,14 @@
 <script setup lang="ts">
 
 import { useRouter } from 'vue-router'
-import { useLoginUserStroe } from '@/stores/useLoginUserStroe'
+import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import { listSpaceVoByPageUsingPost } from '@/api/spaceController'
 import { message } from 'ant-design-vue'
 import { onMounted } from 'vue'
 import { SPACE_TYPE_ENUM } from '@/constants/space'
 
 const router = useRouter()
-const loginUserStore = useLoginUserStroe()
+const loginUserStore = useLoginUserStore()
 
 /**
  * 检查用户是否有个人空间
